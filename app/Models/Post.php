@@ -28,10 +28,13 @@ class Post extends Model
         // }
 
         // todo: use when
-        $query->when($filters['search'] ?? false, function ($query, $search) {
-            return $query->where('title', 'like', '%' . $search . '%')
-                ->orWhere('body', 'like', '%' . $search . '%');
-        });
+        $query->when($filters['search'] ?? false, function($query, $search) {
+            return $query->where(function($query) use ($search) {
+                 $query->where('title', 'like', '%' . $search . '%')
+                             ->orWhere('body', 'like', '%' . $search . '%');
+             });
+         });
+ 
 
         // todo: when searchnya ada category, versi callback
         $query->when($filters['category'] ?? false, function ($query, $category) {
