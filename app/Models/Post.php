@@ -16,6 +16,38 @@ class Post extends Model
 
     protected $with = ['category', 'author']; //note: with in model, jadi di controller gak perlu lagi
 
+
+    /**
+     * NOTE: Local Scope for search
+     */
+    public function scopeFilter($query, array $filters)
+    {
+        // if (isset($filters['search']) ? $filters['search'] : false) {
+        //     return $query->where('title', 'like', '%' . $filters['search'] . '%')
+        //         ->orWhere('body', 'like', '%' . $filters['search'] . '%');
+        // }
+
+        // todo: use when
+        $query->when($filters['search'] ?? false, function ($query, $search) {
+            return $query->where('title', 'like', '%' . $search . '%')
+                ->orWhere('body', 'like', '%' . $search . '%');
+        });
+
+        // todo: when searchnya ada category, versi callback
+        $query->when($filters['category'] ?? false, function ($query, $category) {
+            return $query->whereHas('category', function ($query) use ($category) {
+                $query->where('slug', $category);
+            });
+        });
+
+        // todo: when searchnya ada author, versi arrow function
+        $query->when($filters['author'] ?? false, fn($query, $author) => 
+            $query->whereHas('author', fn($query) =>
+                $query->where('username', $author)
+            )
+        );
+    }
+
     /**
      * NOTE: Relation to Category
      */
